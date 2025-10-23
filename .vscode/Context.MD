@@ -1,135 +1,225 @@
-Perfect 💘 — since your **Cupid.exe** project and `gamestore` are already set up, the next big milestone is evolving the game from using **constant mock players/settings** into a **fully interactive setup** where users input names and configure rounds before starting the game.
+Perfect timing, Harith 💘 — here’s your **master developer prompt** you can feed directly to Cursor (or any AI code editor) to fully load the _Cupid.exe_ gameplay logic context.
 
-Here’s a focused `plan.md` task list for that transition 👇
+It compiles _everything we've designed so far:_
 
----
-
-# 🏹 Cupid.exe — Plan: Interactive Setup & Player Input
-
-### 🎯 Goal
-
-Convert the prototype from hardcoded constants into a dynamic, user‑driven setup:
-
-- Players can **add/remove themselves** in the _Add Players_ screen.
-- Users can **configure total rounds (1–15)** on the _Settings_ screen.
-- “Start Game” becomes enabled only when **3–5 players** are present.
-- All values are live‑synced with the existing `useGameStore`.
+- “Dare‑or‑Dare” skip system
+- Escalating embarrassment / skip streak penalties
+- Daring‑level difficulty scaling
+- Dynamic scoring and rank titles
 
 ---
 
-## 🧠 Context
+## 🏹 **Cupid.exe — Master Gameplay Logic Prompt**
 
-✅ `useGameStore` already exists — it includes actions:  
-`addPlayer`, `removePlayer`, `setTotalRounds`, `startGame`, etc.  
-Now we’ll connect those to proper **text input fields, buttons**, and navigation.
+````text
+You are assisting in the development of a local multiplayer mobile game called **Cupid.exe**.
 
----
-
-## 📋 To‑Do Tasks
-
-### 1. **Settings Screen UI (app/index.tsx)**
-
-- [ ] Replace static content with live data from `useGameStore`.
-- [ ] Display current round config:
-  - [ ] Show `Round Count: {totalRounds}`.
-  - [ ] Create `[–]` and `[+]` `Pressable` buttons → call `setTotalRounds()`.
-  - [ ] Clamp rounds between 1–15 when pressing buttons.
-- [ ] Show player count: `Players: {players.length} / 5`.
-- [ ] Add navigation buttons:
-  - [ ] “Add Players” → navigate to `/add-players`.
-  - [ ] “Start Game” → triggers `startGame()` → navigate to `/pregame`.
-- [ ] Disable “Start Game” until there are **3–5 players**.
+Player flow: a flirty, chaotic hotseat “dare game” where people test courage through escalating dares, punishments, and random events — hosted by a dramatic AI Cupid 💘.
 
 ---
 
-### 2. **Add Players Screen (app/add-players.tsx)**
-
-- [ ] Access state + actions: `players`, `addPlayer`, `removePlayer`.
-- [ ] Build basic text entry:
-  - [ ] `TextInput` for **Player Name (required)**.
-  - [ ] Optional `TextInput` for **Crush Name**.
-  - [ ] Buttons or pressable chips for **Daring Level (1–3)**, default `1`.
-- [ ] “Add Player” button:
-  - [ ] Create ID (from store or auto via `nanoid` inside action).
-  - [ ] Call `addPlayer(name, crush, daringLevel)`.
-  - [ ] Clear inputs after adding.
-  - [ ] Disable if there are already 5 players.
-- [ ] Show a live list of all player entries:
-  - [ ] Display: `name` + “(❤️ crush)” + daring level emoji (🔥 1‑3).
-  - [ ] Add a small “Remove” button → `removePlayer(id)`.
-- [ ] Navigation:
-  - [ ] “Back to Settings” → `/`.
-  - [ ] Optional “Ready” → `/` as shortcut.
+### 🎯 Tech Stack (for reference)
+- Framework: Expo SDK + React Native (Expo Router)
+- Language: TypeScript
+- State: Zustand (`src/core/gamestore.ts`, export `useGameStore`)
+- Components: SafeAreaView + Text + Pressable (text-only prototype)
+- Data: `dares.json`, `punishments.json`, `randomEvents.json`, each with levels 1–3
+- Gameplay Phases: `"settings" | "addPlayers" | "pregame" | "round" | "proof" | "punishment" | "event" | "summary"`
 
 ---
 
-### 3. **Synchronize Settings with State**
+## 💘 CORE GAMEPLAY LOGIC — DARE OR DARE SYSTEM
 
-- [ ] Verify `setTotalRounds()` updates immediately in the store.
-- [ ] Confirm player array persists when navigating between screens.
-- [ ] Ensure `startGame()` only works if:
-  ```ts
-  players.length >= 3 && players.length <= 5;
-  ```
-- [ ] Use guards in `startGame()` to enforce the limit before switching to `"pregame"`.
+### 🧠 Base Flow
+When a player gets a dare:
 
----
+- **Accept** → go to Proof → Valid/Invalid.
+- **Skip** → invoke **Cupid’s Fate Roll** (Dare‑or‑Dare system).
 
-### 4. **Pre‑Game Transitions (app/pregame.tsx)**
+### 🎲 Fate Roll Outcomes (Skip results)
+| Roll | Outcome | Description | Effect |
+|------|----------|-------------|--------|
+| 1–40 | 😅 Safe Skip | Cupid spares you mildly. | Lose small points, skip streak increases. |
+| 41–80 | 💀 Punishment | Cupid retaliates for your cowardice. | Trigger round-level punishment. |
+| 81–100 | 🔥 Worse Dare | Cupid doubles down — a harder or more chaotic dare. | New dare, higher level, same round. |
 
-- [ ] Show intro text:  
-      `"Cupid is locking targets... 💘"`
-- [ ] Add button:
-  - [ ] “Begin Round” → calls `beginRound()` and navigates to `/round`.
-- [ ] Optional: display player names (for flavor).
-
----
-
-### 5. **Verification Checklist**
-
-| Requirement        | Expected Behavior                         |
-| ------------------ | ----------------------------------------- |
-| Round counter      | Adjusts live between 1–15 with buttons    |
-| Player adding      | Adds to state, visible instantly          |
-| Player removing    | Updates count dynamically                 |
-| Player constraints | Enforce 3 min / 5 max                     |
-| Start button       | Enabled only 3–5 players                  |
-| Game start         | Moves phase → “pregame”, route `/pregame` |
+Each skip result drives different transitions:
+- Safe → next round.
+- Punishment → phase `"punishment"`.
+- Worse Dare → phase remains `"round"`, but dare re‑rolls one level higher (max level 3).
 
 ---
 
-### 6. **Edge Case Testing**
+## 🤐 ESCALATING EMBARRASSMENT — SKIP STREAK PENALTIES
 
-- [ ] Try adding fewer than 3 players → “Start Game” stays disabled.
-- [ ] Try adding >5 players → “Add Player” disabled / shows alert.
-- [ ] Validate round decrement under 1 → clamped to 1.
-- [ ] Validate increment over 15 → clamped to 15.
-- [ ] Confirm navigating back to Settings retains existing players and round count.
+Track **how many consecutive times** a player has skipped with `player.stats.skipStreak`.
 
----
+| Skips in a Row | Cupid’s Mood | Game Effect |
+|----------------|---------------|--------------|
+| 1 | Forgiving | Normal odds, normal penalty. |
+| 2 | Annoyed 😒 | +10% chance of punishment, multiplied score penalty. |
+| 3 | Furious 😠 | +25% chance of worse dare, doubled penalty. |
+| 4+ | Wrathful 😈 | Safe skip impossible — forced punishment. |
 
-### 7. **Stretch Goals (nice to have)**
-
-- [ ] Add light emoji feedback (💘 when player added, 💀 when removed).
-- [ ] Persist `players` and `rounds` to AsyncStorage so reopening app continues setup.
-- [ ] Add simple validation messages (e.g. empty name alerts).
+When player finally accepts + completes a dare → reset `skipStreak = 0`.
 
 ---
 
-## 🧩 Deliverables
+### 💀 Skip Scoring Penalty Curve
+```ts
+const basePenalty = -1;
+const adjustedPenalty = basePenalty * (1 + 0.5 * skipStreak);
+applyScore(player.id, adjustedPenalty);
+player.stats.skips++;
+player.stats.skipStreak++;
+````
 
-- [ ] Updated **`app/index.tsx`**  
-      (interactive rounds + navigation)
-- [ ] Updated **`app/add-players.tsx`**  
-      (real player input, remove control)
-- [ ] Verified **`startGame()`** works with real data.
-- [ ] Game can now start dynamically from user-defined players and settings.
+Also dynamically tilt RNG odds:
+
+```ts
+function calculateSkipChances(streak: number) {
+  return {
+    safe: Math.max(40 - 10 * streak, 10),
+    punishment: Math.min(40 + 5 * streak, 70),
+    worseDare: Math.min(20 + 5 * streak, 50),
+  };
+}
+```
 
 ---
 
-✅ **Outcome:**  
-Cupid.exe moves from a hardcoded mock setup → a real, configurable hotseat experience, with functional player input and round management ready for the pre‑game and full gameplay loop.
+## 💪 DARE INTENSITY SCALING
+
+Each player picks a **daringLevel (1–3)** in setup.
+
+Round-level difficulty grows as:
+
+```ts
+roundLevel = min(3, 1 + floor((currentRound - 1) / 2));
+```
+
+The dare or punishment they face uses:
+
+```ts
+finalLevel = clamp(max(player.daringLevel, roundLevel), 1, 3);
+```
+
+So braver players (“Unhinged 💀”) get riskier dares throughout.
 
 ---
 
-Would you like me to generate the starter UI code for `app/add-players.tsx` and `app/index.tsx` (text-only, Expo Router‑safe, hooked to your `useGameStore`)?
+## 💰 SCORING SYSTEM
+
+Each player has a `stats.points` field.  
+All score changes use daring-level multipliers:
+
+| Daring Level | Multiplier | Flavor                         |
+| ------------ | ---------- | ------------------------------ |
+| 1            | ×0.8       | Cautious — safer, fewer points |
+| 2            | ×1.0       | Bold — balanced                |
+| 3            | ×1.3       | Unhinged — chaos pays extra    |
+
+### Base Point Values
+
+| Action                            | Base Points                 |
+| --------------------------------- | --------------------------- |
+| Dare success                      | +3                          |
+| Fail                              | −1                          |
+| Safe skip                         | −1 (scale with skip streak) |
+| Punishment                        | −2                          |
+| Survived punishment or worse dare | +2                          |
+| Triggered event                   | +1                          |
+
+Implementation helper:
+
+```ts
+const daringMultiplier = { 1: 0.8, 2: 1.0, 3: 1.3 };
+
+function applyScore(playerId, base) {
+  const p = getPlayer(playerId);
+  p.stats.points += Math.round(base * daringMultiplier[p.daringLevel]);
+}
+```
+
+---
+
+## 🧾 SUMMARY RANKING SYSTEM
+
+At Summary phase (`summary.tsx`) calculate awards:
+
+| Title                  | Criteria                                      |
+| ---------------------- | --------------------------------------------- |
+| 💘 Cupid’s Favorite    | Highest total points                          |
+| 💖 Fearless Heart      | Most successful dares                         |
+| 💀 Punishment Magnet   | Most punishments received                     |
+| 🎭 Master of Drama     | Most events triggered                         |
+| 👑 Delulu Royalty      | Highest (daringLevel × (eventsTriggered + 1)) |
+| 😳 Most Afraid of Love | Highest skip count or skip streak             |
+
+Also display **Delulu Rating:**
+
+```ts
+deluluScore = clamp(
+  player.daringLevel * (player.stats.successes - player.stats.skips) * (eventsTriggered + 1),
+  0,
+  100
+);
+```
+
+Flavor example:
+
+> “Delulu Energy: 🔥 89% — Peak delusion achieved 💘.”
+
+---
+
+## 🪄 IMPLEMENTATION HINTS
+
+In `gamestore.ts`:
+
+- Add `skipStreak` to `Player.stats`.
+- Add helper `calculateSkipChances()`.
+- Add helper `applyScore()`.
+- Enhance `decideRound()` with Dare‑or‑Dare + skip streak logic.
+- Reset `skipStreak` on successful dare completion.
+
+In `summary.tsx`:
+
+- Use stats to decide rank titles.
+- Display daring level, total points, and Delulu Score.
+
+In `CupidHost.tsx`:
+
+- Add escalating narrator lines for skip streak.
+  - “Cupid sighs… you can dodge love once.”
+  - “Cupid.exe detects cowardice spike — rerouting embarrassment.”
+  - “Cupid.exe override: No escape from romance chaos 💘🔥”
+
+---
+
+### TL;DR – SYSTEM OVERVIEW
+
+1. Players choose **daring level (1–3)** → sets risk/reward multiplier.
+2. Dares & punishments scale up via `max(player.daringLevel, roundLevel)`.
+3. Skipping triggers **Dare‑or‑Dare:** Safe, Punishment, or Harder Dare.
+4. Repeated skips → escalating penalties and higher punishment odds.
+5. Points scale with daring multiplier.
+6. Summary screen shows **titles & ratings** based on performance.
+
+> **Design Philosophy:**  
+> “Cupid.exe doesn’t punish fear — it monetizes it in chaos and laughter.” 💘
+
+---
+
+```
+
+---
+
+### 🧩 Suggested Usage
+
+Paste this prompt into a new **Cursor session** or as a top comment in `src/core/gamestore.ts`.
+It gives your AI the full mechanical context and design goals — everything from skip‑punishment dynamics to ranking logic — so any future code generation continues seamlessly within Cupid.exe’s system.
+
+---
+
+Would you like me to add **TypeScript scaffolds (skeleton code)** for how this connects to your actual `gamestore.ts` actions (`decideRound`, `resolveProof`, etc.) next?
+```

@@ -1,81 +1,71 @@
-import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, View, Button, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Text, View, ScrollView } from 'react-native';
+import { useGameState, Player } from '../src/core/gameStore';
 
-import { getRouteForPhase, useGameState } from '../src/core/gameStore';
+function getAwards(players: Player[]) {
+    if (players.length === 0) return [];
+    // Calculate awards
+    const maxPoints = Math.max(...players.map(p => p.stats.points));
+    const maxSuccesses = Math.max(...players.map(p => p.stats.successes));
+    const maxPunishments = Math.max(...players.map(p => p.stats.punishments));
+    const maxEvents = Math.max(...players.map(p => p.stats.eventsTriggered));
+    const maxDelulu = Math.max(...players.map(p =>
+        Math.max(0, Math.min(100, p.daringLevel * (p.stats.successes - p.stats.skips) * (p.stats.eventsTriggered + 1)))
+    ));
+    const maxSkips = Math.max(...players.map(p => p.stats.skips));
+    const maxSkipStreak = Math.max(...players.map(p => p.stats.skipStreak));
+
+    return players.map((p) => {
+        const deluluScore = Math.max(0, Math.min(100, p.daringLevel * (p.stats.successes - p.stats.skips) * (p.stats.eventsTriggered + 1)));
+        return {
+            name: p.name,
+            daringLevel: p.daringLevel,
+            points: p.stats.points,
+            deluluScore,
+            awards: [
+                p.stats.points === maxPoints ? '💘 Cupid’s Favorite' : null,
+                p.stats.successes === maxSuccesses ? '💖 Fearless Heart' : null,
+                p.stats.punishments === maxPunishments ? '💀 Punishment Magnet' : null,
+                p.stats.eventsTriggered === maxEvents ? '🎭 Master of Drama' : null,
+                deluluScore === maxDelulu ? '👑 Delulu Royalty' : null,
+                (p.stats.skips === maxSkips || p.stats.skipStreak === maxSkipStreak) ? '😳 Most Afraid of Love' : null,
+            ].filter(Boolean),
+        };
+    });
+}
 
 export default function SummaryScreen() {
-    const router = useRouter();
     const players = useGameState((state) => state.players);
-    const totalRounds = useGameState((state) => state.totalRounds);
-    const resetGame = useGameState((state) => state.resetGame);
-
-    const handleRestart = useCallback(() => {
-        resetGame();
-        router.replace(getRouteForPhase('setup'));
-    }, [resetGame, router]);
+    const awards = getAwards(players);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.heading}>Cupid.exe Summary</Text>
-            <Text style={styles.body}>Rounds Completed: {totalRounds}</Text>
-
-            <View style={styles.section}>
-                <Text style={styles.label}>Player Recap</Text>
-                {players.map((player) => (
-                    <Text key={player.id} style={styles.player}>
-                        • {player.name} survived the love gauntlet.
-                    </Text>
+        <SafeAreaView className="flex-1 bg-rose-950">
+            <ScrollView className="flex-1 px-6 py-10">
+                <View className="items-center mb-8">
+                    <Text className="text-5xl font-bold text-rose-50 mb-2">Game Summary</Text>
+                    <Text className="text-base text-rose-300">Cupid.exe Awards & Rankings</Text>
+                </View>
+                {awards.map((p, i) => (
+                    <View key={i} className="mb-8 rounded-3xl bg-rose-900/40 p-6">
+                        <Text className="text-2xl font-bold text-rose-50 mb-1">{p.name}</Text>
+                        <Text className="text-base text-rose-400 mb-2">Daring Level: {p.daringLevel}</Text>
+                        <Text className="text-lg font-semibold text-rose-100 mb-2">Points: {p.points}</Text>
+                        <Text className="text-base text-rose-300 mb-2">
+                            Delulu Energy: 🔥 {p.deluluScore}% — {p.deluluScore > 80 ? 'Peak delusion achieved 💘' : p.deluluScore > 50 ? 'High delulu vibes!' : 'Keep dreaming!'}
+                        </Text>
+                        {p.awards.length > 0 && (
+                            <View className="mt-2 gap-2">
+                                {p.awards.map((award, j) => (
+                                    <Text key={j} className="text-base text-rose-200">{award}</Text>
+                                ))}
+                            </View>
+                        )}
+                    </View>
                 ))}
-            </View>
-
-            <Text style={styles.footer}>
-                Thanks for testing the Cupid.exe loop! Restart to seed a new batch of chaos.
-            </Text>
-
-            <View style={styles.actions}>
-                <Button title="Restart Game" onPress={handleRestart} />
-            </View>
+                <View className="items-center mt-8">
+                    <Text className="text-base text-rose-400">Thanks for playing! 💘</Text>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        backgroundColor: '#fff',
-        justifyContent: 'center',
-    },
-    heading: {
-        fontSize: 28,
-        fontWeight: '700',
-        textAlign: 'center',
-        marginBottom: 16,
-    },
-    body: {
-        textAlign: 'center',
-        fontSize: 18,
-        marginBottom: 24,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    label: {
-        fontWeight: '600',
-        marginBottom: 8,
-    },
-    player: {
-        fontSize: 16,
-        marginBottom: 6,
-    },
-    footer: {
-        textAlign: 'center',
-        color: '#555',
-        marginBottom: 32,
-    },
-    actions: {
-        alignItems: 'center',
-    },
-});

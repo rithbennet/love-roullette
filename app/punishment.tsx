@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, View, Button, StyleSheet } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { getRouteForPhase, useGameState } from '../src/core/gameStore';
 
 export default function PunishmentScreen() {
     const router = useRouter();
-    const phase = useGameState((state) => state.phase);
     const currentRound = useGameState((state) => state.currentRound);
+    const totalRounds = useGameState((state) => state.totalRounds);
     const activePlayer = useGameState((state) => state.activePlayer);
     const latestOutcome = useGameState((state) => state.latestOutcome);
     const nextPhase = useGameState((state) => state.nextPhase);
@@ -20,71 +20,53 @@ export default function PunishmentScreen() {
     }, [nextPhase, router]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.heading}>Punishment Phase</Text>
-            <Text style={styles.phase}>Current Phase: {phase}</Text>
-            <Text style={styles.body}>
-                {activePlayer
-                    ? `${activePlayer.name} dodged the dare and must face consequences.`
-                    : 'No active player found.'}
-            </Text>
+        <SafeAreaView className="flex-1 bg-rose-950">
+            <View className="flex-1 justify-between px-6 py-10">
+                {/* Header */}
+                <View className="items-center gap-2">
+                    <Text className="text-sm text-rose-400">Round {currentRound} of {totalRounds}</Text>
+                    <Text className="text-4xl font-bold text-rose-50 text-center">
+                        Punishment Time! 💀
+                    </Text>
+                    <Text className="text-base text-rose-300">
+                        {activePlayer
+                            ? `${activePlayer.name} chickened out...`
+                            : 'Time to face the consequences!'}
+                    </Text>
+                </View>
 
-            <View style={styles.outcomeBox}>
-                <Text style={styles.label}>Punishment</Text>
-                <Text style={styles.outcome}>{latestOutcome ?? 'Awaiting punishment details...'}</Text>
-            </View>
+                {/* Punishment Card */}
+                <View className="flex-1 justify-center px-4">
+                    <View className="rounded-3xl bg-gradient-to-br from-red-900/60 to-red-800/40 p-8 border-2 border-red-700/50">
+                        <View className="items-center mb-6">
+                            <Text className="text-7xl mb-2">⚠️</Text>
+                            <Text className="text-lg font-semibold text-red-200">Consequences Incoming</Text>
+                        </View>
 
-            <View style={styles.actions}>
-                <Button title="Continue" onPress={handleContinue} />
-                <Text style={styles.roundInfo}>Round {currentRound}</Text>
+                        <Text className="text-lg text-red-50 text-center leading-6 mb-4">
+                            {latestOutcome ?? 'Awaiting punishment details...'}
+                        </Text>
+
+                        <View className="mt-4 p-4 rounded-xl bg-red-950/40">
+                            <Text className="text-sm text-red-300 text-center">
+                                🔥 No backing out now! Complete your punishment to continue the game.
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Action Button */}
+                <View className="gap-4">
+                    <Pressable
+                        onPress={handleContinue}
+                        className="rounded-full bg-rose-500 active:bg-rose-600 py-4"
+                    >
+                        <Text className="text-center text-lg font-semibold text-rose-50">
+                            Punishment Complete
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        backgroundColor: '#fff',
-        justifyContent: 'center',
-    },
-    heading: {
-        fontSize: 26,
-        fontWeight: '600',
-        textAlign: 'center',
-        marginBottom: 12,
-    },
-    phase: {
-        textAlign: 'center',
-        marginBottom: 16,
-    },
-    body: {
-        textAlign: 'center',
-        fontSize: 16,
-    },
-    outcomeBox: {
-        marginTop: 24,
-        padding: 16,
-        borderRadius: 8,
-        backgroundColor: '#fff4f4',
-        borderWidth: 1,
-        borderColor: '#f5c2c0',
-    },
-    label: {
-        fontWeight: '600',
-        marginBottom: 8,
-    },
-    outcome: {
-        fontSize: 16,
-        lineHeight: 22,
-    },
-    actions: {
-        marginTop: 32,
-        alignItems: 'center',
-    },
-    roundInfo: {
-        marginTop: 8,
-        color: '#666',
-    },
-});
