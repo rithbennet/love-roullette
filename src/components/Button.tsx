@@ -1,6 +1,8 @@
 import { MotiPressable } from 'moti/interactions';
 import React from 'react';
+import * as Haptics from 'expo-haptics';
 import { Text, View } from 'react-native';
+import { useClickSound } from '../hooks/useClickSound';
 
 interface ButtonProps {
     title: string;
@@ -9,6 +11,8 @@ interface ButtonProps {
     backgroundColor?: string;
     borderColor?: string;
     textColor?: string;
+    playSound?: boolean;
+    haptics?: boolean;
 }
 
 export function Button({
@@ -18,10 +22,26 @@ export function Button({
     backgroundColor = '#e6f7ff',
     borderColor,
     textColor,
+    playSound = true,
+    haptics = true,
 }: ButtonProps) {
+    const playClick = useClickSound(playSound);
+
     // Default colors based on variant
     const defaultBorderColor = variant === 'primary' ? '#631f38' : '#622135';
     const defaultTextColor = variant === 'primary' ? '#631f38' : '#622135';
+
+    const handlePress = async () => {
+        if (haptics) {
+            try {
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            } catch {
+                // ignore
+            }
+        }
+        if (playSound) await playClick();
+        onPress();
+    };
 
     return (
         <MotiPressable
@@ -34,7 +54,7 @@ export function Button({
                 };
             }}
             transition={{ type: 'timing', duration: 140 }}
-            onPress={onPress}
+            onPress={handlePress}
         >
             <View
                 className="rounded-xl py-4 shadow-md border-2"

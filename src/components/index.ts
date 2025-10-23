@@ -1,3 +1,7 @@
 export { Button } from './Button';
 export { FloatingInputBox } from './FloatingInputBox';
-export { CharacterCard } from './CharacterCard';
+
+export { default as AnimatedCupid } from './AnimatedCupid';
+export { default as RoundCounter } from './RoundCounter';
+export { default as FloatingBlobsBackground } from './FloatingBlobsBackground';
+export { default as FloatingHearts } from './FloatingHearts';
