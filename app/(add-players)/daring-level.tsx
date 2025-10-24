@@ -1,17 +1,19 @@
 import { useState, useCallback } from 'react';
-import { View, Text, Pressable, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useClickSound } from '../../src/hooks/useClickSound';
-import { MotiView } from 'moti';
+import { MotiPressable } from 'moti/interactions';
+import * as Haptics from 'expo-haptics';
 import { useGameState } from '../../src/core/gameStore';
+import { Button, PlayerLineup, AnimatedMascot } from '@/components';
 
-const MASCOT_HEADS = [
-    require('../../src/assets/mascots/head/victim-head-1.png'),
-    require('../../src/assets/mascots/head/victim-head-2.png'),
-    require('../../src/assets/mascots/head/victim-head-3.png'),
-    require('../../src/assets/mascots/head/victim-head-4.png'),
-    require('../../src/assets/mascots/head/victime-head-5.png'),
+const MASCOT_BODIES = [
+    require('../../src/assets/mascots/victim1.png'),
+    require('../../src/assets/mascots/victim2.png'),
+    require('../../src/assets/mascots/victim3.png'),
+    require('../../src/assets/mascots/victim4.png'),
+    require('../../src/assets/mascots/victim5.png'),
 ];
 
 const DARING_LEVELS = [
@@ -36,8 +38,6 @@ export default function DaringLevelScreen() {
     const playClickSound = useClickSound(true, require('../../src/assets/sounds/click-sound.mp3'));
 
     const handleAddPlayer = useCallback(() => {
-        playClickSound();
-
         if (players.length >= MAX_PLAYERS) {
             Alert.alert('Max Players', `You can only add up to ${MAX_PLAYERS} players.`);
             return;
@@ -50,23 +50,14 @@ export default function DaringLevelScreen() {
             characterId: `character-${avatarIndex}`,
         });
 
-        Alert.alert(
-            'Player Added!',
-            `${playerName} has been added to the game.`,
-            [
-                {
-                    text: 'Add Another',
-                    onPress: () => router.push('/(add-players)'),
-                },
-                {
-                    text: 'Done',
-                    onPress: () => router.back(),
-                },
-            ]
-        );
-    }, [playerName, crush, daringLevel, avatarIndex, addPlayer, players.length, router, playClickSound]);
+        // Navigate to review page
+        router.push('/(add-players)/review');
+    }, [playerName, crush, daringLevel, avatarIndex, addPlayer, players.length, router]);
 
-    const handleDaringLevelSelect = useCallback((level: number) => {
+    const handleDaringLevelSelect = useCallback(async (level: number) => {
+        try {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch { }
         playClickSound();
         setDaringLevel(level);
     }, [playClickSound]);
@@ -77,107 +68,102 @@ export default function DaringLevelScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
-                <ScrollView
-                    className="flex-1"
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    keyboardShouldPersistTaps="handled"
-                    bounces={false}
-                >
-                    {/* Top Section */}
-                    <View className="bg-gradient-to-b from-[#fff0f4] to-[#ee97ad] rounded-b-[50px] px-6 pt-8 pb-12">
-                        {/* Home Indicator */}
-                        <View className="items-center mb-4">
-                            <View className="w-[134px] h-[5px] bg-[#622135] rounded-full" />
-                        </View>
+                <View className="flex-1 bg-gradient-to-b from-[#fff0f4] to-[#ee97ad] rounded-b-[50px] px-6 pt-4 pb-6">
+                    {/* Player Lineup */}
+                    <PlayerLineup maxVisible={5} />
 
-                        {/* Avatar */}
-                        <View className="items-center mb-4">
-                            <Image
-                                source={MASCOT_HEADS[avatarIndex % MASCOT_HEADS.length]}
-                                className="w-[191px] h-[238px]"
-                                resizeMode="contain"
-                            />
-                        </View>
+                    {/* Avatar */}
+                    <View className="items-center mb-2">
+                        <AnimatedMascot source={MASCOT_BODIES[avatarIndex % MASCOT_BODIES.length]} keyProp={avatarIndex} width={140} height={175} />
+                    </View>
 
-                        {/* Player Info */}
-                        <View className="items-center mb-8">
-                            <Text className="text-[29px] text-black italic font-thin mb-1">Player {players.length + 1}</Text>
-                            <Text className="text-[30px] text-black font-thin">[{playerName}]</Text>
-                            {crush && crush !== 'Unknown' && (
-                                <Text className="text-[20px] text-[#622135] font-thin mt-1">💘 {crush}</Text>
-                            )}
-                        </View>
-
-                        {/* Title */}
-                        <Text className="text-[34px] font-bold text-[#622135] leading-[34px] mb-6">
-                            Choose Your Daring Level
+                    {/* Player Info */}
+                    <View className="items-center mb-4">
+                        <Text className="text-[24px] text-black italic font-thin mb-0.5">
+                            Player {players.length + 1}
                         </Text>
+                        <Text className="text-[26px] text-black font-thin">[{playerName}]</Text>
+                        {crush && crush !== 'Unknown' && (
+                            <Text className="text-[16px] text-[#622135] font-thin mt-0.5">
+                                💘 {crush}
+                            </Text>
+                        )}
+                    </View>
 
-                        {/* Daring Level Options */}
-                        <View className="gap-3 mb-6">
-                            {DARING_LEVELS.map(({ level, emoji, label, description }) => (
-                                <Pressable
+                    {/* Title */}
+                    <Text className="text-[28px] font-bold text-[#622135] leading-[28px] mb-4">
+                        Choose Your Daring Level
+                    </Text>
+
+                    {/* Daring Level Options */}
+                    <View className="gap-2.5 mb-5 flex-1">
+                        {DARING_LEVELS.map(({ level, emoji, label, description }) => {
+                            const isSelected = daringLevel === level;
+                            return (
+                                <MotiPressable
                                     key={level}
+                                    animate={({ pressed }) => {
+                                        'worklet';
+                                        return {
+                                            scale: pressed ? 0.96 : 1,
+                                            opacity: pressed ? 0.9 : 1,
+                                            translateY: pressed ? 2 : 0,
+                                        };
+                                    }}
+                                    transition={{ type: 'timing', duration: 140 }}
                                     onPress={() => handleDaringLevelSelect(level)}
                                 >
-                                    <MotiView
-                                        animate={{
-                                            scale: daringLevel === level ? 1.02 : 1,
-                                            backgroundColor: daringLevel === level ? '#e6f7ff' : '#ffffff',
-                                        }}
-                                        transition={{
-                                            type: 'spring',
-                                            damping: 15,
-                                        }}
-                                        className="rounded-xl border-2 border-[#622135] p-4 flex-row items-center justify-between"
+                                    <View
+                                        className="rounded-2xl border-2 p-4 flex-row items-center justify-between"
                                         style={{
-                                            shadowColor: '#000',
-                                            shadowOffset: { width: 2, height: 3 },
-                                            shadowOpacity: 0.15,
-                                            shadowRadius: 3,
-                                            elevation: 3,
+                                            backgroundColor: isSelected ? '#ffffff' : '#fff0f4',
+                                            borderColor: isSelected ? '#622135' : '#ee97ad',
+                                            shadowColor: '#622135',
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: isSelected ? 0.2 : 0.1,
+                                            shadowRadius: 4,
+                                            elevation: isSelected ? 4 : 2,
                                         }}
                                     >
-                                        <View className="flex-row items-center gap-3">
-                                            <Text className="text-3xl">{emoji}</Text>
-                                            <View>
-                                                <Text className="text-xl font-bold text-[#622135]">{label}</Text>
-                                                <Text className="text-sm text-[#622135] font-thin">{description}</Text>
+                                        <View className="flex-1">
+                                            <Text className="text-lg font-bold text-[#622135] mb-0.5">
+                                                {label}
+                                            </Text>
+                                            <View className="flex-row items-center gap-1">
+                                                <Text className="text-sm">{emoji}</Text>
+                                                <Text className="text-xs text-[#622135]/70">
+                                                    {description}
+                                                </Text>
                                             </View>
                                         </View>
-                                        {daringLevel === level && (
-                                            <View className="w-6 h-6 rounded-full bg-[#622135] items-center justify-center">
-                                                <Text className="text-white text-sm">✓</Text>
+                                        {isSelected && (
+                                            <View className="w-6 h-6 rounded-full bg-[#622135] items-center justify-center ml-2">
+                                                <Text className="text-white text-sm font-bold">✓</Text>
                                             </View>
                                         )}
-                                    </MotiView>
-                                </Pressable>
-                            ))}
-                        </View>
-
-                        {/* Add Player Button */}
-                        <Pressable
-                            onPress={handleAddPlayer}
-                            className="rounded-[7px] py-3 px-4 border border-[#622135] bg-[#e6f7ff]"
-                            style={{
-                                shadowColor: '#000',
-                                shadowOffset: { width: 5, height: 7 },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 5,
-                                elevation: 5,
-                            }}
-                        >
-                            <Text className="text-center text-2xl italic text-[#622135]">
-                                Add Player
-                            </Text>
-                        </Pressable>
-
-                        {/* Home Indicator */}
-                        <View className="items-center mt-8">
-                            <View className="w-[134px] h-[5px] bg-[#622135] rounded-full" />
-                        </View>
+                                    </View>
+                                </MotiPressable>
+                            );
+                        })}
                     </View>
-                </ScrollView>
+
+                    {/* Add Player Button */}
+                    <Button
+                        onPress={handleAddPlayer}
+                        className="rounded-[7px] py-3 px-4 border border-[#622135] bg-[#e6f7ff]"
+                        style={{
+                            shadowColor: '#000',
+                            shadowOffset: { width: 5, height: 7 },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 5,
+                            elevation: 5,
+                        }}
+                    >
+                        <Text className="text-center text-xl italic text-[#622135]">
+                            Add Player
+                        </Text>
+                    </Button>
+                </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );

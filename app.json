@@ -4,7 +4,7 @@
     "slug": "cupidexe",
     "version": "1.0.0",
     "web": {
-      "favicon": ".src/assets/images/favicon.png"
+      "favicon": "src/assets/images/favicon.png"
     },
     "experiments": {
       "tsconfigPaths": true
@@ -14,10 +14,10 @@
       "expo-font"
     ],
     "orientation": "portrait",
-    "icon": "src/assets/images/icon.png",
+  "icon": "src/assets/images/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": ".src/assets/images/splash-icon.png",
+      "image": "src/assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFC2E5"
     },
@@ -28,8 +28,8 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": ".src/assets/images/android-icon-foreground.png",
+        "adaptiveIcon": {
+        "foregroundImage": "src/assets/images/android-icon-foreground.png",
         "backgroundColor": "#ffffff"
       }
     },

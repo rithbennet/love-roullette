@@ -1,17 +1,17 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useClickSound } from '../../src/hooks/useClickSound';
-import { MotiView } from 'moti';
 import { useGameState } from '../../src/core/gameStore';
+import { Button, PlayerLineup, AnimatedMascot } from '@/components';
 
-const MASCOT_HEADS = [
-    require('../../src/assets/mascots/head/victim-head-1.png'),
-    require('../../src/assets/mascots/head/victim-head-2.png'),
-    require('../../src/assets/mascots/head/victim-head-3.png'),
-    require('../../src/assets/mascots/head/victim-head-4.png'),
-    require('../../src/assets/mascots/head/victime-head-5.png'),
+const MASCOT_BODIES = [
+    require('../../src/assets/mascots/victim1.png'),
+    require('../../src/assets/mascots/victim2.png'),
+    require('../../src/assets/mascots/victim3.png'),
+    require('../../src/assets/mascots/victim4.png'),
+    require('../../src/assets/mascots/victim5.png'),
 ];
 
 export default function AvatarSelectionScreen() {
@@ -34,12 +34,12 @@ export default function AvatarSelectionScreen() {
 
     const handlePrevAvatar = useCallback(() => {
         playClickSound();
-        setSelectedAvatar((prev) => (prev === 0 ? MASCOT_HEADS.length - 1 : prev - 1));
+        setSelectedAvatar((prev) => (prev === 0 ? MASCOT_BODIES.length - 1 : prev - 1));
     }, [playClickSound]);
 
     const handleNextAvatar = useCallback(() => {
         playClickSound();
-        setSelectedAvatar((prev) => (prev === MASCOT_HEADS.length - 1 ? 0 : prev + 1));
+        setSelectedAvatar((prev) => (prev === MASCOT_BODIES.length - 1 ? 0 : prev + 1));
     }, [playClickSound]);
 
     return (
@@ -54,11 +54,8 @@ export default function AvatarSelectionScreen() {
                     keyboardShouldPersistTaps="handled"
                     bounces={false}
                 >
-                    {/* Background Blobs */}
-                    <View className="absolute left-[-100px] top-[130px]">
-                        <View className="absolute left-[204px] top-0 w-[297px] h-[296px] rounded-full bg-[#fff4f4] opacity-46" style={{ filter: 'blur(35px)' }} />
-                        <View className="absolute left-0 top-0 w-[297px] h-[296px] rounded-full bg-[#fff4f4] opacity-46" style={{ filter: 'blur(35px)' }} />
-                    </View>
+
+
 
                     {/* Header */}
                     <View className="px-6 pt-4">
@@ -79,19 +76,12 @@ export default function AvatarSelectionScreen() {
                             </Pressable>
 
                             {/* Avatar Display */}
-                            <MotiView
-                                from={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ type: 'spring', damping: 15 }}
-                                key={selectedAvatar}
-                                className="w-[212px] h-[265px]"
-                            >
-                                <Image
-                                    source={MASCOT_HEADS[selectedAvatar]}
-                                    className="w-full h-full"
-                                    resizeMode="contain"
-                                />
-                            </MotiView>
+                            <AnimatedMascot
+                                source={MASCOT_BODIES[selectedAvatar]}
+                                keyProp={selectedAvatar}
+                                width={212}
+                                height={265}
+                            />
 
                             {/* Right Arrow */}
                             <Pressable
@@ -104,18 +94,7 @@ export default function AvatarSelectionScreen() {
 
                         {/* Show existing players if any */}
                         {players.length > 0 && (
-                            <View className="flex-row items-center gap-2 mt-4">
-                                {players.slice(0, 3).map((player, idx) => (
-                                    <View key={player.id} className="w-10 h-10 rounded-full overflow-hidden shadow-md">
-                                        <Image
-                                            source={MASCOT_HEADS[parseInt(player.characterId.split('-')[1] || '0') % MASCOT_HEADS.length]}
-                                            className="w-full h-full"
-                                            resizeMode="cover"
-                                        />
-                                    </View>
-                                ))}
-                                <Text className="text-[#622135] text-sm italic ml-2">Love Lineup...</Text>
-                            </View>
+                            <PlayerLineup maxVisible={5} />
                         )}
                     </View>
 
@@ -136,7 +115,7 @@ export default function AvatarSelectionScreen() {
                         />
 
                         {/* Next Button */}
-                        <Pressable
+                        <Button
                             onPress={handleNext}
                             disabled={!name.trim()}
                             className={`rounded-[7px] py-3 px-4 border border-[#622135] ${name.trim() ? 'bg-[#e6f7ff]' : 'bg-gray-300'
@@ -152,12 +131,8 @@ export default function AvatarSelectionScreen() {
                             <Text className={`text-center text-2xl italic ${name.trim() ? 'text-[#622135]' : 'text-gray-500'}`}>
                                 Next
                             </Text>
-                        </Pressable>
+                        </Button>
 
-                        {/* Home Indicator */}
-                        <View className="items-center mt-8">
-                            <View className="w-[134px] h-[5px] bg-[#622135] rounded-full" />
-                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

@@ -1,16 +1,18 @@
-import { useState, useCallback } from 'react';
-import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { useState, useCallback, useRef } from 'react';
+import { View, Text, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useClickSound } from '../../src/hooks/useClickSound';
 import { useGameState } from '../../src/core/gameStore';
+import { Button, PlayerLineup, AnimatedMascot } from '@/components';
+import CrushList from '../../src/components/CrushList';
 
-const MASCOT_HEADS = [
-    require('../../src/assets/mascots/head/victim-head-1.png'),
-    require('../../src/assets/mascots/head/victim-head-2.png'),
-    require('../../src/assets/mascots/head/victim-head-3.png'),
-    require('../../src/assets/mascots/head/victim-head-4.png'),
-    require('../../src/assets/mascots/head/victime-head-5.png'),
+const MASCOT_BODIES = [
+    require('../../src/assets/mascots/victim1.png'),
+    require('../../src/assets/mascots/victim2.png'),
+    require('../../src/assets/mascots/victim3.png'),
+    require('../../src/assets/mascots/victim4.png'),
+    require('../../src/assets/mascots/victim5.png'),
 ];
 
 export default function CrushInputScreen() {
@@ -23,6 +25,7 @@ export default function CrushInputScreen() {
 
     const [crush, setCrush] = useState('');
     const playClickSound = useClickSound(true, require('../../src/assets/sounds/click-sound.mp3'));
+    const crushListRef = useRef<any>(null);
 
     const handleNext = useCallback(() => {
         playClickSound();
@@ -34,8 +37,13 @@ export default function CrushInputScreen() {
 
     const handleSelectFromList = useCallback(() => {
         playClickSound();
-        // TODO: Implement select from list functionality
-        alert('Select from list feature coming soon!');
+        crushListRef.current?.show?.();
+    }, [playClickSound]);
+
+    const handleCrushSelected = useCallback((name: string) => {
+        playClickSound();
+        // set crush name to selected value
+        setCrush(name);
     }, [playClickSound]);
 
     return (
@@ -50,20 +58,16 @@ export default function CrushInputScreen() {
                     keyboardShouldPersistTaps="handled"
                     bounces={false}
                 >
+
                     {/* Top Section */}
                     <View className="bg-gradient-to-b from-[#fff0f4] to-[#ee97ad] rounded-b-[50px] px-6 pt-8 pb-12">
-                        {/* Home Indicator */}
-                        <View className="items-center mb-4">
-                            <View className="w-[134px] h-[5px] bg-[#622135] rounded-full" />
-                        </View>
+
+                        {/* Player Lineup */}
+                        <PlayerLineup maxVisible={5} />
 
                         {/* Avatar */}
                         <View className="items-center mb-4">
-                            <Image
-                                source={MASCOT_HEADS[avatarIndex % MASCOT_HEADS.length]}
-                                className="w-[191px] h-[238px]"
-                                resizeMode="contain"
-                            />
+                            <AnimatedMascot source={MASCOT_BODIES[avatarIndex % MASCOT_BODIES.length]} keyProp={avatarIndex} width={191} height={238} />
                         </View>
 
                         {/* Player Info */}
@@ -87,9 +91,10 @@ export default function CrushInputScreen() {
                         />
 
                         {/* Next Button */}
-                        <Pressable
+                        <Button
                             onPress={handleNext}
-                            className="rounded-[7px] py-3 px-4 border border-[#622135] bg-[#e6f7ff] mb-4"
+                            isDisabled={!crush.trim()}
+                            className={`rounded-[7px] py-3 px-4 border border-[#622135] ${crush.trim() ? 'bg-[#e6f7ff]' : 'bg-gray-300'} mb-4`}
                             style={{
                                 shadowColor: '#000',
                                 shadowOffset: { width: 5, height: 7 },
@@ -98,16 +103,16 @@ export default function CrushInputScreen() {
                                 elevation: 5,
                             }}
                         >
-                            <Text className="text-center text-2xl italic text-[#622135]">
+                            <Text className={`text-center text-2xl italic ${crush.trim() ? 'text-[#622135]' : 'text-gray-500'}`}>
                                 Next
                             </Text>
-                        </Pressable>
+                        </Button>
 
                         {/* Or Text */}
                         <Text className="text-center text-[24px] text-[#622135] font-thin mb-4">or</Text>
 
                         {/* Select from List Button */}
-                        <Pressable
+                        <Button
                             onPress={handleSelectFromList}
                             className="rounded-[7px] py-3 px-4 border border-[#622135] bg-[#e6f7ff]"
                             style={{
@@ -121,14 +126,14 @@ export default function CrushInputScreen() {
                             <Text className="text-center text-2xl italic text-[#622135]">
                                 Select from list
                             </Text>
-                        </Pressable>
+                        </Button>
 
-                        {/* Home Indicator */}
-                        <View className="items-center mt-8">
-                            <View className="w-[134px] h-[5px] bg-[#622135] rounded-full" />
-                        </View>
+
                     </View>
                 </ScrollView>
+                {/* Crush list action sheet */}
+                <CrushList ref={crushListRef} onSelect={handleCrushSelected} />
+
             </KeyboardAvoidingView>
         </SafeAreaView>
     );

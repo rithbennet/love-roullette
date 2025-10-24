@@ -37,7 +37,7 @@ export default function HomeScreen() {
   const handleStartGame = useCallback(() => {
     const success = startGame();
     if (success) {
-      router.push('/pregame');
+      router.push('(add-players)/review');
     }
   }, [router, startGame]);
 
@@ -93,13 +93,7 @@ export default function HomeScreen() {
             variant="primary"
             onPress={handleStartGame}
           />
-          <View className="mt-3">
-            <Button
-              title="Create Crush Roster"
-              variant="secondary"
-              onPress={handleCreateRoster}
-            />
-          </View>
+
         </View>
 
         {/* Home Indicator Spacer */}
