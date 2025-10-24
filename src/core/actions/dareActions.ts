@@ -66,7 +66,13 @@ export const skipDare = (state: GameData): Partial<GameData> => {
         : player.stats.skipStreak === 2
           ? `${player.name} slips away again. Cupid is getting annoyed... 😒`
           : `${player.name} escapes once more. Cupid's patience is wearing thin! 😠`;
-    newPhase = 'proof';
+    // Safe skip goes to safe-skip screen
+    return {
+      phase: 'safe-skip',
+      skipRollResult: result,
+      latestOutcome: outcome,
+      players: [...state.players],
+    };
   } else if (roll < chances.safe + chances.punishment) {
     result = 'punishment';
     const roundLevel = getRoundLevel(state.currentRound);
@@ -192,7 +198,13 @@ export const skipPunishment = (state: GameData): Partial<GameData> => {
         : player.stats.skipStreak === 2
           ? `${player.name} slips away from punishment. Cupid's patience wears thin... 😒`
           : `${player.name} dodges punishment again. Cupid is SEETHING! 😠`;
-    newPhase = 'proof';
+    // Safe skip from punishment goes to safe-skip screen
+    return {
+      phase: 'safe-skip',
+      skipRollResult: result,
+      latestOutcome: outcome,
+      players: [...state.players],
+    };
   } else if (roll < chances.safe + chances.punishment) {
     result = 'punishment';
     const roundLevel = getRoundLevel(state.currentRound);

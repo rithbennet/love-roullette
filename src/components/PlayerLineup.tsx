@@ -3,11 +3,11 @@ import { View, Image, Text } from 'react-native';
 import { useGameState } from '../core/gameStore';
 
 const MASCOT_BODIES = [
-    require('../assets/mascots/victim1.png'),
-    require('../assets/mascots/victim2.png'),
-    require('../assets/mascots/victim3.png'),
-    require('../assets/mascots/victim4.png'),
-    require('../assets/mascots/victim5.png'),
+    require('../assets/mascots/head/victim-head-1.png'),
+    require('../assets/mascots/head/victim-head-2.png'),
+    require('../assets/mascots/head/victim-head-3.png'),
+    require('../assets/mascots/head/victim-head-4.png'),
+    require('../assets/mascots/head/victime-head-5.png'),
 ];
 
 const MAX_PLAYERS = 5;

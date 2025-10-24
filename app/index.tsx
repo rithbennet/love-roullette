@@ -11,6 +11,7 @@ import {
   FloatingBlobsBackground,
   FloatingHearts,
 } from '../src/components';
+import { SpeakerToggle } from '../src/components/SpeakerToggle';
 
 const MIN_ROUNDS = 1;
 const MAX_ROUNDS = 30;
@@ -19,7 +20,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const totalRounds = useGameState((state) => state.totalRounds);
   const setTotalRounds = useGameState((state) => state.setTotalRounds);
-  const startGame = useGameState((state) => state.startGame);
 
   const handleAdjustRounds = useCallback(
     (delta: number) => {
@@ -35,13 +35,7 @@ export default function HomeScreen() {
   );
 
   const handleStartGame = useCallback(() => {
-    const success = startGame();
-    if (success) {
-      router.push('(add-players)/review');
-    }
-  }, [router, startGame]);
-
-  const handleCreateRoster = useCallback(() => {
+    // Navigate to add players screen to start the game setup
     router.push('/(add-players)');
   }, [router]);
 
@@ -57,6 +51,10 @@ export default function HomeScreen() {
 
       {/* Content */}
       <View className="flex-1 px-5 justify-between">
+        {/* Speaker toggle (top-right) */}
+        <View className="absolute right-6 top-10">
+          <SpeakerToggle />
+        </View>
         {/* Cupid Character */}
         <View className="items-center mt-36">
           <AnimatedCupid

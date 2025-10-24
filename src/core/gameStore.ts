@@ -53,4 +53,9 @@ export const useGameState = create<GameState>((set) => ({
   nextPhase: () => set((state) => nextPhase(state)),
 
   resetGame: () => set(() => ({ ...createInitialData() })),
+  // Toggle background music preference. If `enabled` is omitted, toggle current value.
+  toggleBgMusic: (enabled?: boolean) =>
+    set((state) => ({
+      bgMusicEnabled: typeof enabled === 'boolean' ? enabled : !state.bgMusicEnabled,
+    })),
 }));

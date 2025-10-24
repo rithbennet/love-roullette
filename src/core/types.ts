@@ -7,6 +7,7 @@ export type Phase =
   | 'round'
   | 'proof'
   | 'punishment'
+  | 'safe-skip'
   | 'event'
   | 'summary';
 
@@ -48,6 +49,8 @@ export interface GameData {
   latestOutcome?: string;
   latestEvent?: RandomEventPrompt;
   skipRollResult?: 'safe' | 'punishment' | 'worseDare';
+  // Background music preference
+  bgMusicEnabled?: boolean;
 }
 
 export interface GameActions {
@@ -64,6 +67,8 @@ export interface GameActions {
   selectNextPlayer: (playerId: string) => void;
   nextPhase: () => void;
   resetGame: () => void;
+  // Toggle background music on/off. When called without an argument, toggles current state.
+  toggleBgMusic: (enabled?: boolean) => void;
 }
 
 export type GameState = GameData & GameActions;

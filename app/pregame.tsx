@@ -1,14 +1,15 @@
 import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { getRouteForPhase, useGameState } from '../src/core/gameStore';
+import { Button } from '../src/components/Button';
 
 export default function PreGameScreen() {
     const router = useRouter();
     const totalRounds = useGameState((state) => state.totalRounds);
-    const players = useGameState((state) => state.players);
     const nextPhase = useGameState((state) => state.nextPhase);
 
     const handleContinue = useCallback(() => {
@@ -17,80 +18,95 @@ export default function PreGameScreen() {
         router.replace(getRouteForPhase(updatedPhase));
     }, [nextPhase, router]);
 
+    const handleBack = useCallback(() => {
+        router.back();
+    }, [router]);
+
     return (
-        <SafeAreaView className="flex-1 bg-rose-950">
-            <View className="flex-1 justify-between px-6 py-10">
-                {/* Header */}
-                <View className="items-center gap-4">
-                    <Text className="text-6xl">💘</Text>
-                    <Text className="text-4xl font-bold text-rose-50 text-center">
-                        Get Ready!
-                    </Text>
-                    <Text className="text-base text-rose-300 text-center">
-                        Cupid is locking targets...
-                    </Text>
-                </View>
-
-                {/* Game Info */}
-                <View className="flex-1 justify-center gap-6 px-4">
-                    <View className="rounded-3xl bg-rose-900/40 p-6 gap-4">
-                        <Text className="text-lg font-semibold text-rose-100 text-center">
-                            Game Summary
+        <SafeAreaView className="flex-1" edges={['top']}>
+            <LinearGradient
+                colors={['#FFA3A3', '#FFE2E2', '#FFC2DD']}
+                locations={[0, 0.5, 1]}
+                style={{ flex: 1 }}
+            >
+                <View className="flex-1 justify-between px-6 py-10">
+                    {/* Header */}
+                    <View className="items-center mb-6">
+                        <Text className="text-6xl mb-4">💘</Text>
+                        <Text
+                            className="text-3xl font-bold text-center"
+                            style={{
+                                color: '#622135',
+                                textShadowColor: 'rgba(230, 230, 230, 0.46)',
+                                textShadowOffset: { width: 0, height: 4 },
+                                textShadowRadius: 5,
+                            }}
+                        >
+                            How to Play
                         </Text>
+                    </View>
 
-                        <View className="gap-3">
-                            <View className="flex-row justify-between items-center">
-                                <Text className="text-base text-rose-300">Total Rounds:</Text>
-                                <Text className="text-lg font-semibold text-rose-50">{totalRounds}</Text>
+                    {/* Instructions */}
+                    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                        <View className="bg-white/30 rounded-3xl p-6 mb-4">
+                            <View className="mb-6">
+                                <Text className="text-xl font-bold text-[#622135] mb-2">
+                                    🎯 The Goal
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6">
+                                    Earn the most points by completing dares and proving your courage in {totalRounds} rounds of love and chaos!
+                                </Text>
                             </View>
 
-                            <View className="flex-row justify-between items-center">
-                                <Text className="text-base text-rose-300">Players:</Text>
-                                <Text className="text-lg font-semibold text-rose-50">{players.length}</Text>
+                            <View className="mb-6">
+                                <Text className="text-xl font-bold text-[#622135] mb-2">
+                                    🎡 How It Works
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6 mb-2">
+                                    • Cupid&apos;s roulette selects a player each round
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6 mb-2">
+                                    • Accept the dare or skip for a worse one
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6 mb-2">
+                                    • Prove you completed it to the group
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6">
+                                    • Fail and face a punishment!
+                                </Text>
+                            </View>
+
+                            <View className="mb-6">
+                                <Text className="text-xl font-bold text-[#622135] mb-2">
+                                    ⚠️ Skip at Your Risk
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6">
+                                    Skipping gives you a 50% chance of getting an even worse dare. Or you might get lucky and skip safely!
+                                </Text>
+                            </View>
+
+                            <View>
+                                <Text className="text-xl font-bold text-[#622135] mb-2">
+                                    🎊 Random Events
+                                </Text>
+                                <Text className="text-base text-[#622135] leading-6">
+                                    Expect the unexpected! Cupid might throw in surprise twists to keep things interesting.
+                                </Text>
                             </View>
                         </View>
-                    </View>
+                    </ScrollView>
 
-                    <View className="rounded-2xl bg-rose-800/30 p-5">
-                        <Text className="text-sm text-rose-200 text-center leading-5">
-                            🎯 Each round, Cupid will select a player and give them a daring challenge.{'\n\n'}
-                            ✅ Accept to prove your courage and share the proof!{'\n\n'}
-                            ❌ Decline and face a punishment instead!
-                        </Text>
-                    </View>
-
-                    {/* Player List */}
-                    <View className="gap-2">
-                        <Text className="text-sm font-semibold text-rose-400 text-center mb-2">
-                            Players in this round:
-                        </Text>
-                        {players.map((player) => (
-                            <View
-                                key={player.id}
-                                className="flex-row items-center justify-center gap-2"
-                            >
-                                <Text className="text-base text-rose-200">•</Text>
-                                <Text className="text-base text-rose-100">{player.name}</Text>
-                                {player.crush && player.crush !== 'Unknown' && (
-                                    <Text className="text-sm text-rose-400">💘 {player.crush}</Text>
-                                )}
-                            </View>
-                        ))}
+                    {/* Buttons */}
+                    <View className="gap-3 mt-4">
+                        <Button onPress={handleContinue} variant="secondary">
+                            Let&apos;s Play!
+                        </Button>
+                        <Button onPress={handleBack} variant="secondary">
+                            Back
+                        </Button>
                     </View>
                 </View>
-
-                {/* Action Button */}
-                <View>
-                    <Pressable
-                        onPress={handleContinue}
-                        className="rounded-full bg-rose-500 active:bg-rose-600 py-4"
-                    >
-                        <Text className="text-center text-lg font-semibold text-rose-50">
-                            Let&apos;s Go! 🚀
-                        </Text>
-                    </Pressable>
-                </View>
-            </View>
+            </LinearGradient>
         </SafeAreaView>
     );
 }

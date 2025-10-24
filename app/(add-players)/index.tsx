@@ -18,8 +18,23 @@ export default function AvatarSelectionScreen() {
     const router = useRouter();
     const players = useGameState((state) => state.players);
     const [name, setName] = useState('');
-    const [selectedAvatar, setSelectedAvatar] = useState(0);
     const playClickSound = useClickSound(true, require('../../src/assets/sounds/click-sound.mp3'));
+
+    // Get list of avatar indices that are already taken by existing players
+    const takenAvatars = new Set(players.map(player => {
+        // Extract avatar index from characterId (format: "character-0", "character-1", etc.)
+        const match = player.characterId.match(/character-(\d+)/);
+        return match ? parseInt(match[1]) : -1;
+    }));
+
+    // Get available avatars (indices that haven't been taken)
+    const availableAvatars = MASCOT_BODIES.map((_, index) => index).filter(index => !takenAvatars.has(index));
+
+    // Current index in the available avatars array
+    const [selectedAvailableIndex, setSelectedAvailableIndex] = useState(0);
+
+    // The actual avatar index from MASCOT_BODIES
+    const selectedAvatar = availableAvatars[selectedAvailableIndex] ?? 0;
 
     const handleNext = useCallback(() => {
         playClickSound();
@@ -34,13 +49,24 @@ export default function AvatarSelectionScreen() {
 
     const handlePrevAvatar = useCallback(() => {
         playClickSound();
-        setSelectedAvatar((prev) => (prev === 0 ? MASCOT_BODIES.length - 1 : prev - 1));
-    }, [playClickSound]);
+        setSelectedAvailableIndex((prev) => (prev === 0 ? availableAvatars.length - 1 : prev - 1));
+    }, [playClickSound, availableAvatars.length]);
 
     const handleNextAvatar = useCallback(() => {
         playClickSound();
-        setSelectedAvatar((prev) => (prev === MASCOT_BODIES.length - 1 ? 0 : prev + 1));
-    }, [playClickSound]);
+        setSelectedAvailableIndex((prev) => (prev === availableAvatars.length - 1 ? 0 : prev + 1));
+    }, [playClickSound, availableAvatars.length]);
+
+    // If no avatars are available (all taken), show an error state
+    if (availableAvatars.length === 0) {
+        return (
+            <SafeAreaView className="flex-1 bg-[#ffa8a8] items-center justify-center px-6">
+                <Text className="text-2xl font-bold text-[#622135] text-center">
+                    All avatars have been chosen!
+                </Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-[#ffa8a8]">
@@ -67,13 +93,17 @@ export default function AvatarSelectionScreen() {
                     {/* Avatar Carousel */}
                     <View className="items-center justify-center mt-8 mb-8">
                         <View className="flex-row items-center justify-center gap-4 w-full px-6">
-                            {/* Left Arrow */}
-                            <Pressable
-                                onPress={handlePrevAvatar}
-                                className="w-10 h-10 items-center justify-center"
-                            >
-                                <Text className="text-[#622135] text-3xl font-bold transform rotate-180">›</Text>
-                            </Pressable>
+                            {/* Left Arrow - Only show if there are multiple available avatars */}
+                            {availableAvatars.length > 1 ? (
+                                <Pressable
+                                    onPress={handlePrevAvatar}
+                                    className="w-10 h-10 items-center justify-center"
+                                >
+                                    <Text className="text-[#622135] text-3xl font-bold transform rotate-180">›</Text>
+                                </Pressable>
+                            ) : (
+                                <View className="w-10 h-10" />
+                            )}
 
                             {/* Avatar Display */}
                             <AnimatedMascot
@@ -83,14 +113,25 @@ export default function AvatarSelectionScreen() {
                                 height={265}
                             />
 
-                            {/* Right Arrow */}
-                            <Pressable
-                                onPress={handleNextAvatar}
-                                className="w-10 h-10 items-center justify-center"
-                            >
-                                <Text className="text-[#622135] text-3xl font-bold">›</Text>
-                            </Pressable>
+                            {/* Right Arrow - Only show if there are multiple available avatars */}
+                            {availableAvatars.length > 1 ? (
+                                <Pressable
+                                    onPress={handleNextAvatar}
+                                    className="w-10 h-10 items-center justify-center"
+                                >
+                                    <Text className="text-[#622135] text-3xl font-bold">›</Text>
+                                </Pressable>
+                            ) : (
+                                <View className="w-10 h-10" />
+                            )}
                         </View>
+
+                        {/* Show available avatars count */}
+                        {MASCOT_BODIES.length - availableAvatars.length > 0 && (
+                            <Text className="text-[#622135] text-sm mt-2 italic">
+                                {availableAvatars.length} of {MASCOT_BODIES.length} avatars available
+                            </Text>
+                        )}
 
                         {/* Show existing players if any */}
                         {players.length > 0 && (

@@ -14,7 +14,7 @@
       "expo-font"
     ],
     "orientation": "portrait",
-  "icon": "src/assets/images/icon.png",
+    "icon": "src/assets/images/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "src/assets/images/splash-icon.png",
@@ -25,14 +25,25 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-        "adaptiveIcon": {
-        "foregroundImage": "src/assets/images/android-icon-foreground.png",
-        "backgroundColor": "#ffffff"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.adrithbennet.cupidexe",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "scheme": "cupid.exe"
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "src/assets/images/android-icon-foreground.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.adrithbennet.cupidexe"
+    },
+    "scheme": "cupid.exe",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b57d1b8f-f6fa-4589-b9a4-2c367cff172a"
+      }
+    }
   }
 }

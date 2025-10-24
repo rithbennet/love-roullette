@@ -3,8 +3,6 @@ module.exports = function (api) {
   let plugins = [];
   plugins.push('react-native-worklets/plugin');
   // Reanimated plugin is required for @gorhom/bottom-sheet and Reanimated v2
-  plugins.push('react-native-reanimated/plugin');
-
   return {
     presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
 

@@ -1,6 +1,5 @@
 import type { GameData } from '../types';
 import { RANDOM_EVENT_PROBABILITY, TOTAL_ROUNDS_DEFAULT } from '../constants/game';
-import { MOCK_PLAYERS } from '../mockData';
 import { RANDOM_EVENT_PROMPTS, pickRandom } from '../utils/prompts';
 import { applyScore } from '../utils/scoring';
 import { SCORE_EVENT } from '../constants/scoring';
@@ -10,13 +9,15 @@ export const createInitialData = (): GameData => ({
   totalRounds: TOTAL_ROUNDS_DEFAULT,
   currentRound: 0,
   currentDareLevel: 1,
-  players: [...MOCK_PLAYERS], // Use mock players for testing
+  players: [],
   activePlayer: undefined,
   activePlayerId: undefined,
   latestDare: undefined,
   latestOutcome: undefined,
   latestEvent: undefined,
   skipRollResult: undefined,
+  // Enable background music by default. User can toggle it off from the home menu.
+  bgMusicEnabled: true,
 });
 
 export const startGame = (state: GameData): { success: boolean; updates: Partial<GameData> } => {
@@ -55,7 +56,8 @@ export const nextPhase = (state: GameData): Partial<GameData> => {
       // Player should now choose accept/decline, not auto-resolve
       return {};
     case 'proof':
-    case 'punishment': {
+    case 'punishment':
+    case 'safe-skip': {
       const hasMoreRounds = state.currentRound < state.totalRounds;
       if (!hasMoreRounds) {
         return {

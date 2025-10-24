@@ -1,4 +1,5 @@
 export { Button } from './Button';
+export { IconButton } from './IconButton';
 export { FloatingInputBox } from './FloatingInputBox';
 
 export { default as AnimatedCupid } from './AnimatedCupid';

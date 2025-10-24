@@ -10,8 +10,9 @@ export const ROUTE_MAP: Record<Phase, string> = {
   round: '/round',
   proof: '/proof',
   punishment: '/punishment',
+  'safe-skip': '/safe-skip',
   event: '/event',
-  summary: '/summary',
+  summary: '/LeaderScreen',
 };
 
 export const getRouteForPhase = (phase: Phase): string => ROUTE_MAP[phase] ?? '/';

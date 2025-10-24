@@ -1,17 +1,34 @@
 import { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, View, Pressable } from 'react-native';
+import { Text, View, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { getRouteForPhase, useGameState } from '../src/core/gameStore';
+import { Button } from '../src/components/Button';
+
+// Import character head assets
+const HEAD_ASSETS = [
+    require('../src/assets/mascots/head/victim-head-1.png'),
+    require('../src/assets/mascots/head/victim-head-2.png'),
+    require('../src/assets/mascots/head/victim-head-3.png'),
+    require('../src/assets/mascots/head/victim-head-4.png'),
+    require('../src/assets/mascots/head/victime-head-5.png'),
+];
 
 export default function PunishmentScreen() {
     const router = useRouter();
-    const currentRound = useGameState((state) => state.currentRound);
-    const totalRounds = useGameState((state) => state.totalRounds);
-    const activePlayer = useGameState((state) => state.activePlayer);
     const latestOutcome = useGameState((state) => state.latestOutcome);
+    const activePlayer = useGameState((state) => state.activePlayer);
+    const players = useGameState((state) => state.players);
     const nextPhase = useGameState((state) => state.nextPhase);
+
+    // Get active player's head asset
+    const activePlayerIndex = Math.max(
+        0,
+        players.findIndex((p) => p.id === activePlayer?.id)
+    );
+    const headAsset = HEAD_ASSETS[activePlayerIndex % HEAD_ASSETS.length];
 
     const handleContinue = useCallback(() => {
         nextPhase();
@@ -20,53 +37,121 @@ export default function PunishmentScreen() {
     }, [nextPhase, router]);
 
     return (
-        <SafeAreaView className="flex-1 bg-rose-950">
-            <View className="flex-1 justify-between px-6 py-10">
-                {/* Header */}
-                <View className="items-center gap-2">
-                    <Text className="text-sm text-rose-400">Round {currentRound} of {totalRounds}</Text>
-                    <Text className="text-4xl font-bold text-rose-50 text-center">
-                        Punishment Time! 💀
-                    </Text>
-                    <Text className="text-base text-rose-300">
-                        {activePlayer
-                            ? `${activePlayer.name} chickened out...`
-                            : 'Time to face the consequences!'}
-                    </Text>
-                </View>
+        <SafeAreaView className="flex-1" edges={['top']}>
+            <LinearGradient
+                colors={['#FFA8A8', '#FF6565', '#471D1D']}
+                locations={[0, 0.135, 1]}
+                style={{ flex: 1 }}
+            >
+                {/* Blood splatter background */}
+                <Image
+                    source={require('../src/assets/prison/blood-spatter.png')}
+                    className="absolute -top-8 -left-[91px] w-[606px] h-[606px] opacity-[0.21]"
+                    resizeMode="cover"
+                />
 
-                {/* Punishment Card */}
-                <View className="flex-1 justify-center px-4">
-                    <View className="rounded-3xl bg-gradient-to-br from-red-900/60 to-red-800/40 p-8 border-2 border-red-700/50">
-                        <View className="items-center mb-6">
-                            <Text className="text-7xl mb-2">⚠️</Text>
-                            <Text className="text-lg font-semibold text-red-200">Consequences Incoming</Text>
-                        </View>
-
-                        <Text className="text-lg text-red-50 text-center leading-6 mb-4">
-                            {latestOutcome ?? 'Awaiting punishment details...'}
+                <View className="flex-1 px-5">
+                    {/* Header */}
+                    <View className="items-center pt-[72px]">
+                        <Text
+                            className="text-[34px] font-bold text-center w-[279px]"
+                            style={{
+                                color: '#020202',
+                                letterSpacing: 0.374,
+                                lineHeight: 31,
+                            }}
+                        >
+                            Punishment time
                         </Text>
+                    </View>
 
-                        <View className="mt-4 p-4 rounded-xl bg-red-950/40">
-                            <Text className="text-sm text-red-300 text-center">
-                                🔥 No backing out now! Complete your punishment to continue the game.
-                            </Text>
+                    {/* Prison bars with character - Fixed position container */}
+                    <View className="absolute left-0 right-0 items-center" style={{ top: 200 }}>
+                        <View className="relative items-center justify-center">
+                            {/* Character behind bars with backdrop circle */}
+                            <View
+                                className="absolute items-center justify-center"
+                                style={{ width: 200, height: 200, zIndex: 1 }}
+                            >
+                                <View
+                                    className="absolute w-[200px] h-[200px] rounded-full"
+                                    style={{
+                                        backgroundColor: '#CD8773',
+                                        opacity: 0.9,
+                                    }}
+                                />
+                                <Image
+                                    source={headAsset}
+                                    style={{
+                                        width: 160,
+                                        height: 160,
+                                        resizeMode: 'contain',
+                                    }}
+                                />
+                            </View>
+
+                            {/* Prison bars overlay */}
+                            <Image
+                                source={require('../src/assets/prison/bars.png')}
+                                style={{
+                                    width: 260,
+                                    height: 260,
+                                    resizeMode: 'contain',
+                                    zIndex: 2,
+                                }}
+                            />
                         </View>
                     </View>
-                </View>
 
-                {/* Action Button */}
-                <View className="gap-4">
-                    <Pressable
-                        onPress={handleContinue}
-                        className="rounded-full bg-rose-500 active:bg-rose-600 py-4"
+                    {/* Devil mascot - Behind everything */}
+                    <View className="absolute right-3 top-[100px]" style={{ zIndex: 2 }}>
+                        <Image
+                            source={require('../src/assets/prison/devil.png')}
+                            className="w-[224px] h-[202px]"
+                            resizeMode="contain"
+                        />
+                    </View>
+
+                    {/* Punishment Text - Fixed position with controlled height */}
+                    <View
+                        className="absolute left-0 right-0 items-center px-10"
+                        style={{ top: 550, height: 120 }}
                     >
-                        <Text className="text-center text-lg font-semibold text-rose-50">
-                            Punishment Complete
+                        <Text
+                            className="text-[28px] font-bold text-center"
+                            style={{
+                                color: '#B26D6D',
+                                letterSpacing: 0.374,
+                                lineHeight: 34,
+                            }}
+                            numberOfLines={3}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.7}
+                        >
+                            {latestOutcome || '[Punishment here]'}
                         </Text>
-                    </Pressable>
+                    </View>
+
+                    {/* Action Button - Fixed position at bottom */}
+                    <View className="absolute left-5 right-5 bottom-[50px]">
+                        <Button
+                            onPress={handleContinue}
+                            variant="secondary"
+                            backgroundColor="#020202"
+                            borderColor="#B26D6D"
+                            textColor="#B26D6D"
+                            style={{
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 4,
+                            }}
+                        >
+                            FORGIVE ME!
+                        </Button>
+                    </View>
                 </View>
-            </View>
+            </LinearGradient>
         </SafeAreaView>
     );
 }

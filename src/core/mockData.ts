@@ -1,4 +1,4 @@
-import type { Player, PlayerStats } from './types';
+import type { PlayerStats } from './types';
 
 export const createInitialStats = (): PlayerStats => ({
   points: 0,
@@ -9,31 +9,3 @@ export const createInitialStats = (): PlayerStats => ({
   punishments: 0,
   eventsTriggered: 0,
 });
-
-// Mock players for testing
-export const MOCK_PLAYERS: Player[] = [
-  {
-    id: 'player-1',
-    name: 'Aria',
-    daringLevel: 2,
-    crush: 'Jules',
-    characterId: 'char-1',
-    stats: createInitialStats(),
-  },
-  {
-    id: 'player-2',
-    name: 'Jules',
-    daringLevel: 3,
-    crush: 'Mika',
-    characterId: 'char-2',
-    stats: createInitialStats(),
-  },
-  {
-    id: 'player-3',
-    name: 'Mika',
-    daringLevel: 1,
-    crush: 'Aria',
-    characterId: 'char-3',
-    stats: createInitialStats(),
-  },
-];
